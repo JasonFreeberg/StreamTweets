@@ -2,7 +2,7 @@
 # August 18th 2016
 # Stream and store Tweets for projects!
 # persistwifi() reconnects wifi and exponentially backs off
-# Tweets are thrown into a local MongoDB databse
+# Tweets are thrown into a local MongoDB database
 
 import sys
 import subprocess
@@ -15,18 +15,26 @@ from tweepy.utils import import_simplejson
 from tweepy.models import Status
 from httplib import IncompleteRead
 
-# Twitter keys and tokens
-KEY = ""
-SECRET = ""
-ACCESS_TOKEN = ""
-ACCESS_SECRET = ""
-# Database names and locations
-DATABASE_NAME = ''
-COLLECTION_NAME = ''
-DATA_LOCATION = ''
-STREAM_TIME = 'INFINITY!'  # in seconds
-KEYWORDS = ['']
+with open(sys.argv[1], 'r') as f:
+    args = f.readlines()
 
+args = [item.strip('\n') for item in args]
+
+# Twitter keys and tokens
+# You can make the stream time and keywords as command line arguments using "sys.argv([2])" and so on
+# Or take them from the text file using "args[7]" and so on
+KEY = args[0]
+SECRET = args[1]
+ACCESS_TOKEN = args[2]
+ACCESS_SECRET = args[3]
+# Database names and locations
+DATABASE_NAME = args[4]
+COLLECTION_NAME = args[5]
+DATA_LOCATION = args[6]
+STREAM_TIME = 45  # in seconds
+KEYWORDS = ['Trump']
+
+# Read text file with tokens and collections
 
 class MyStreamListener(tp.StreamListener):
     """
@@ -35,6 +43,7 @@ class MyStreamListener(tp.StreamListener):
     """
 
     def __init__(self, a_collection=None):
+        tp.StreamListener.__init__(self)
         self.collection = a_collection
         self.collection_ids = []
         self.json = import_simplejson()
@@ -67,7 +76,6 @@ class MyStreamListener(tp.StreamListener):
 subprocess.Popen(['mongod', '--dbpath', DATA_LOCATION])
 client = MongoClient('localhost', 27017)
 myCollection = client[DATABASE_NAME][COLLECTION_NAME]
-time.sleep(0.1)  # temporary fix because of terminal logging
 
 # API authorization and setup
 auth = tp.OAuthHandler(KEY, SECRET)
